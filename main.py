@@ -8,7 +8,7 @@ from transformers import LayoutLMv2FeatureExtractor, LayoutLMv2ForSequenceClassi
 import torch, gc
 
 logging.set_verbosity_error()
-reference_path = "./train_data/invoice/0000145869.tif"
+reference_path = "./test3.jpg"
 
 image = Image.open(reference_path)
 print("\nLoaded reference image: " + reference_path + "\n")
@@ -26,7 +26,8 @@ feature_extractor = LayoutLMv2FeatureExtractor()
 tokenizer = LayoutXLMTokenizer.from_pretrained("microsoft/layoutxlm-base")
 processor = LayoutXLMProcessor(feature_extractor, tokenizer)
 
-encoded_inputs = processor(image, return_tensors="pt")
+token_size = 512
+encoded_inputs = processor(image, return_tensors="pt", max_length=token_size, padding="max_length", truncation=True)
 
 dataset_path = "./train_data"
 labels = [label for label in os.listdir(dataset_path)]
@@ -67,7 +68,7 @@ features = Features({
     'labels': ClassLabel(num_classes=len(labels), names=labels),
 })
 
-token_size = 512
+
 def preprocess_data(examples):
   images = [Image.open(path).convert("RGB") for path in examples['image_path']]
   encoded_inputs = processor(padding="max_length", truncation=True, images=images, max_length=token_size, return_token_type_ids=True)
@@ -106,7 +107,7 @@ learn_rate = 5e-5
 optimizer = torch.optim.AdamW(model.parameters(), lr=learn_rate)
 
 global_step = 0
-num_train_epochs = 30
+num_train_epochs = 10
 t_total = len(dataloader) * num_train_epochs
 
 print("\n\nSetup:\n-------\nLearning rate: "+str(learn_rate)+"\nBatch Size: "+str(batch_size)+"\nCuda Split Size: "+str(cuda_split_size)+"MB\n")
@@ -138,7 +139,7 @@ for epoch in range(num_train_epochs):
   accuracy = 100 * correct / len(data)
   print("Training accuracy:", accuracy.item())
 
-encoded_inputs = processor(image, return_tensors="pt")
+encoded_inputs = processor(image, return_tensors="pt", max_length=token_size, padding="max_length", truncation=True)
 
 for k,v in encoded_inputs.items():
   encoded_inputs[k] = v.to(model.device)
@@ -149,7 +150,7 @@ outputs = model(**encoded_inputs)
 p = torch.nn.functional.softmax(outputs.logits, dim=1)
 maxval = p[0].cpu().detach().numpy().max()
 print("Confidence:" + str(maxval * 100) + "%")
-model.save_pretrained("./model")
+#model.save_pretrained("./model")
 logits = outputs.logits
 predicted_class_idx = logits.argmax(-1).item()
 print("Predicted class:", id2label[predicted_class_idx])
