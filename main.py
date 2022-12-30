@@ -107,7 +107,7 @@ learn_rate = 5e-5
 optimizer = torch.optim.AdamW(model.parameters(), lr=learn_rate)
 
 global_step = 0
-num_train_epochs = 10
+num_train_epochs = 20
 t_total = len(dataloader) * num_train_epochs
 
 print("\n\nSetup:\n-------\nLearning rate: "+str(learn_rate)+"\nBatch Size: "+str(batch_size)+"\nCuda Split Size: "+str(cuda_split_size)+"MB\n")
@@ -141,16 +141,20 @@ for epoch in range(num_train_epochs):
 
 encoded_inputs = processor(image, return_tensors="pt", max_length=token_size, padding="max_length", truncation=True)
 
+# alle tensoren auf die richtige hardware schieben
 for k,v in encoded_inputs.items():
   encoded_inputs[k] = v.to(model.device)
 
-# forward pass
-outputs = model(**encoded_inputs)
+# eval modus, gibt speicher frei
+model.eval()
+with torch.no_grad():
 
-p = torch.nn.functional.softmax(outputs.logits, dim=1)
-maxval = p[0].cpu().detach().numpy().max()
-print("Confidence:" + str(maxval * 100) + "%")
-#model.save_pretrained("./model")
-logits = outputs.logits
-predicted_class_idx = logits.argmax(-1).item()
-print("Predicted class:", id2label[predicted_class_idx])
+  outputs = model(**encoded_inputs)
+  p = torch.nn.functional.softmax(outputs.logits, dim=1)
+  maxval = p[0].cpu().detach().numpy().max()
+  print("Confidence:" + str(maxval * 100) + "%")
+  logits = outputs.logits
+  predicted_class_idx = logits.argmax(-1).item()
+  print("Predicted class:", id2label[predicted_class_idx])
+  gc.collect()
+  torch.cuda.empty_cache()
