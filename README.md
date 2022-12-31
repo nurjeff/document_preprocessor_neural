@@ -5,7 +5,7 @@ Trains a model capable of classifying any document using the 🤗Huggingface tra
 Requires:
 - PyTorch
 - 🤗huggingface bindings
-- Tesseract installation as well as PyTesseract bindings
+- Tesseract installation as well as PyTesseract bindings for testing purposes
 
 plus (obviously) some indirect dependencies.
 
