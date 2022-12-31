@@ -114,6 +114,8 @@ print("\n\nSetup:\n-------\nLearning rate: "+str(learn_rate)+"\nBatch Size: "+st
 print("\nStarting neural net training with " + processing_units + " loaded tensors..")
 print("-----------------------")
 model.train()
+gc.collect()
+torch.cuda.empty_cache()
 for epoch in range(num_train_epochs):
   print("\nEpoch:", epoch, "/", num_train_epochs)
   running_loss = 0.0
@@ -147,6 +149,7 @@ for k,v in encoded_inputs.items():
 
 # eval modus, gibt speicher frei
 model.eval()
+model.save_pretrained("F:/ptmodel/ptmodel.pt")
 with torch.no_grad():
 
   outputs = model(**encoded_inputs)
