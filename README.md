@@ -1,13 +1,13 @@
 # NeuralNet Document Classifier
 
-Trains a model capable of classifying any document using the 🤗Huggingface transformers and LayoutXLM multi-language weights.
+Trains a model capable of classifying any document using some Huggingface transformers and LayoutXLM multi-language weights.
 
 Requires:
 - PyTorch
-- 🤗huggingface bindings
+- Huggingface bindings
 - Tesseract installation as well as PyTesseract bindings for testing purposes
 
-plus (obviously) some indirect dependencies.
+plus some pip dependencies.
 
 To train the model, create a **/train_data** subdirectory on main.py dir level containing folders representing the classifier labels, e.G:
 
